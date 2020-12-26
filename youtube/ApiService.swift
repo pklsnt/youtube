@@ -14,21 +14,21 @@ class ApiService: NSObject {
     
     let baseUrl = "https://s3-us-west-2.amazonaws.com/youtubeassets"
     
-    func fetchVideos(completion: ([Video]) -> ()) {
-        fetchFeedForUrlString("\(baseUrl)/home_num_likes.json", completion: completion)
+    func fetchVideos(completion: @escaping ([Video]) -> ()) {
+        fetchFeedForUrlString(urlString: "\(baseUrl)/home_num_likes.json", completion: completion)
     }
     
-    func fetchTrendingFeed(completion: ([Video]) -> ()) {
-        fetchFeedForUrlString("\(baseUrl)/trending.json", completion: completion)
+    func fetchTrendingFeed(completion: @escaping ([Video]) -> ()) {
+        fetchFeedForUrlString(urlString: "\(baseUrl)/trending.json", completion: completion)
     }
     
-    func fetchSubscriptionFeed(completion: ([Video]) -> ()) {
-        fetchFeedForUrlString("\(baseUrl)/subscriptions.json", completion: completion)
+    func fetchSubscriptionFeed(completion: @escaping ([Video]) -> ()) {
+        fetchFeedForUrlString(urlString: "\(baseUrl)/subscriptions.json", completion: completion)
     }
     
-    func fetchFeedForUrlString(urlString: String, completion: ([Video]) -> ()) {
+    func fetchFeedForUrlString(urlString: String, completion: @escaping ([Video]) -> ()) {
         let url = NSURL(string: urlString)
-        NSURLSession.sharedSession().dataTaskWithURL(url!) { (data, response, error) in
+        URLSession.shared.dataTask(with: url! as URL) { (data, response, error) in
             
             if error != nil {
                 print(error)
@@ -36,11 +36,10 @@ class ApiService: NSObject {
             }
             
             do {
-                if let unwrappedData = data, jsonDictionaries = try NSJSONSerialization.JSONObjectWithData(unwrappedData, options: .MutableContainers) as? [[String: AnyObject]] {
-                    
-                    dispatch_async(dispatch_get_main_queue(), {
+                if let unwrappedData = data, let jsonDictionaries = try JSONSerialization.jsonObject(with: unwrappedData, options: .mutableContainers) as? [[String: AnyObject]] {
+                    DispatchQueue.main.async {
                         completion(jsonDictionaries.map({return Video(dictionary: $0)}))
-                    })
+                    }
                 }
                 
             } catch let jsonError {

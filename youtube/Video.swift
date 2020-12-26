@@ -10,14 +10,15 @@ import UIKit
 
 class SafeJsonObject: NSObject {
     
-    override func setValue(value: AnyObject?, forKey key: String) {
-        let uppercasedFirstCharacter = String(key.characters.first!).uppercaseString
+    override func setValue(_ value: Any?, forKey key: String) {
+        let uppercasedFirstCharacter: String = key.first!.uppercased() // String(key.first!).uppercased
+        //let range = key.startIndex...key.startIndex.advancedBy(0)
+        let range = key.startIndex...key.index(key.startIndex, offsetBy: 0)
+                
+        let selectorString = key.replacingCharacters(in: range, with: uppercasedFirstCharacter)
         
-        let range = key.startIndex...key.startIndex.advancedBy(0)
-        let selectorString = key.stringByReplacingCharactersInRange(range, withString: uppercasedFirstCharacter)
-        
-        let selector = NSSelectorFromString("set\(selectorString):")
-        let responds = self.respondsToSelector(selector)
+        let selector = Selector("set\(selectorString):")
+        let responds = self.responds(to: selector)
         
         if !responds {
             return
@@ -38,11 +39,11 @@ class Video: SafeJsonObject {
     
     var channel: Channel?
     
-    override func setValue(value: AnyObject?, forKey key: String) {
+    override func setValue(_ value: Any?, forKey key: String) {
         if key == "channel" {
             //custom channel setup
             self.channel = Channel()
-            self.channel?.setValuesForKeysWithDictionary(value as! [String: AnyObject])
+            self.channel?.setValuesForKeys(value as! [String: AnyObject])
         } else {
             super.setValue(value, forKey: key)
         }
@@ -50,7 +51,7 @@ class Video: SafeJsonObject {
     
     init(dictionary: [String: AnyObject]) {
         super.init()
-        setValuesForKeysWithDictionary(dictionary)
+        setValuesForKeys(dictionary)
     }
     
 }
